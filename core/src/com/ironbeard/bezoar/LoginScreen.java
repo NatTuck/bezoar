@@ -5,9 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -29,9 +27,6 @@ public class LoginScreen implements Screen {
 	Button startButton;
 	
 	public LoginScreen(final BezoarGame game) {
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 1280, 800);
-		
 		stage = new Stage();
 		table = new Table();
 		table.setFillParent(true);
@@ -51,20 +46,17 @@ public class LoginScreen implements Screen {
 			}
 		});
 		
-		Gdx.input.setInputProcessor(stage);
 	}
 	
 	@Override
 	public void show() {
-		// TODO Auto-generated method stub
-		
+		Gdx.input.setInputProcessor(stage);
 	}
 
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		//camera.update();
 	
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();

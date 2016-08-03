@@ -3,6 +3,7 @@ defmodule Bezoar.UserSocket do
 
   ## Channels
   # channel "rooms:*", Bezoar.RoomChannel
+  channel "players:*", Bezoar.PlayerChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket

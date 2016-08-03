@@ -13,7 +13,7 @@ public class FontLoader {
 	static HashMap<String, BitmapFont> fonts = new HashMap<String, BitmapFont>();
 	static HashMap<String, Skin>       skins = new HashMap<String, Skin>();
 
-	static BitmapFont load(String name, int size) {
+	public static BitmapFont load(String name, int size) {
 		String key = name + "-" + size;
 		
 		if (!fonts.containsKey(key)) {
@@ -29,7 +29,7 @@ public class FontLoader {
 		return fonts.get(key);
 	}
 	
-	static Skin getSkin(String name, int size) {
+	public static Skin getSkin(String name, int size) {
 		String key = name + "-" + size;
 
 		if (!skins.containsKey(key)) {

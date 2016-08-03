@@ -11,6 +11,8 @@ defmodule Bezoar.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    
+    resources "/players", PlayerController, except: [:new, :edit]
   end
 
   scope "/", Bezoar do
