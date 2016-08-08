@@ -7,28 +7,36 @@ defmodule Bezoar.PlayerController do
 
   def index(conn, _params) do
     players = Repo.all(Player)
-    render(conn, "index.json", players: players)
+    render(conn, "index.html", players: players)
+  end
+
+  def new(conn, _params) do
+    changeset = Player.changeset(%Player{})
+    render(conn, "new.html", changeset: changeset)
   end
 
   def create(conn, %{"player" => player_params}) do
     changeset = Player.changeset(%Player{}, player_params)
 
     case Repo.insert(changeset) do
-      {:ok, player} ->
+      {:ok, _player} ->
         conn
-        |> put_status(:created)
-        |> put_resp_header("location", player_path(conn, :show, player))
-        |> render("show.json", player: player)
+        |> put_flash(:info, "Player created successfully.")
+        |> redirect(to: player_path(conn, :index))
       {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> render(Bezoar.ChangesetView, "error.json", changeset: changeset)
+        render(conn, "new.html", changeset: changeset)
     end
   end
 
   def show(conn, %{"id" => id}) do
+    player = Repo.get!(Player, id) |> Repo.preload(:champs)
+    render(conn, "show.html", player: player)
+  end
+
+  def edit(conn, %{"id" => id}) do
     player = Repo.get!(Player, id)
-    render(conn, "show.json", player: player)
+    changeset = Player.changeset(player)
+    render(conn, "edit.html", player: player, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "player" => player_params}) do
@@ -37,11 +45,11 @@ defmodule Bezoar.PlayerController do
 
     case Repo.update(changeset) do
       {:ok, player} ->
-        render(conn, "show.json", player: player)
-      {:error, changeset} ->
         conn
-        |> put_status(:unprocessable_entity)
-        |> render(Bezoar.ChangesetView, "error.json", changeset: changeset)
+        |> put_flash(:info, "Player updated successfully.")
+        |> redirect(to: player_path(conn, :show, player))
+      {:error, changeset} ->
+        render(conn, "edit.html", player: player, changeset: changeset)
     end
   end
 
@@ -52,6 +60,8 @@ defmodule Bezoar.PlayerController do
     # it to always work (and if it does not, it will raise).
     Repo.delete!(player)
 
-    send_resp(conn, :no_content, "")
+    conn
+    |> put_flash(:info, "Player deleted successfully.")
+    |> redirect(to: player_path(conn, :index))
   end
 end

@@ -1,0 +1,30 @@
+<h2>Listing champs</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Hp</th>
+      <th>Hp max</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for champ <- @champs do %>
+    <tr>
+      <td><%= champ.name %></td>
+      <td><%= champ.hp %></td>
+      <td><%= champ.hp_max %></td>
+
+      <td class="text-right">
+        <%= link "Show", to: champ_path(@conn, :show, champ), class: "btn btn-default btn-xs" %>
+        <%= link "Edit", to: champ_path(@conn, :edit, champ), class: "btn btn-default btn-xs" %>
+        <%= link "Delete", to: champ_path(@conn, :delete, champ), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<%= link "New champ", to: champ_path(@conn, :new) %>

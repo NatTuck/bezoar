@@ -1,0 +1,6 @@
+<h2>Edit champ</h2>
+
+<%= render "form.html", changeset: @changeset,
+                        action: champ_path(@conn, :update, @champ) %>
+
+<%= link "Back", to: champ_path(@conn, :index) %>

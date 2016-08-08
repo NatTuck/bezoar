@@ -1,0 +1,35 @@
+<h2>Show player</h2>
+
+<ul>
+
+  <li>
+    <strong>Name:</strong>
+    <%= @player.name %>
+  </li>
+
+  <li>
+    <strong>Email:</strong>
+    <%= @player.email %>
+  </li>
+
+  <li>
+    <strong>Secret:</strong>
+    <%= @player.secret %>
+  </li>
+
+  <li>
+    <strong>Gold:</strong>
+    <%= @player.gold %>
+  </li>
+</ul>
+
+<p><strong>Champs</strong></p>
+
+<ul>
+  <%= Enum.map @player.champs, fn cc -> %>
+    <li><%= link cc.name, to: champ_path(@conn, :show, cc) %></li>
+  <% end %>
+</ul>
+
+<%= link "Edit", to: player_path(@conn, :edit, @player) %> |
+<%= link "Back", to: player_path(@conn, :index) %>

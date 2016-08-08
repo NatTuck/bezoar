@@ -1,0 +1,31 @@
+<h2>Show champ</h2>
+
+<ul>
+  <li>
+    <strong>Name:</strong>
+    <%= @champ.name %>
+  </li>
+  <li>
+    <strong>Base Hp:</strong>
+    <%= @champ.hp_base %>
+  </li>
+  <li>
+    <strong>Current Hp:</strong>
+    <%= @champ.hp %>
+  </li>
+  <li>
+    <strong>Hp max:</strong>
+    <%= @champ.hp_max %>
+  </li>
+</ul>
+
+<p><strong>Skills</strong></p>
+
+<ul>
+  <%= Enum.map @champ.skills, fn ss -> %>
+  <li><%= link ss.name, to: skill_path(@conn, :show, ss) %></li>
+  <% end %>
+</ul>
+
+<%= link "Edit", to: champ_path(@conn, :edit, @champ) %>
+<%= link "Back", to: champ_path(@conn, :index) %>

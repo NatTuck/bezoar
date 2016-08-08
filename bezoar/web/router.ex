@@ -11,8 +11,6 @@ defmodule Bezoar.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
-    
-    resources "/players", PlayerController, except: [:new, :edit]
   end
 
   scope "/", Bezoar do
@@ -21,8 +19,17 @@ defmodule Bezoar.Router do
     get "/", PageController, :index
   end
 
+  scope "/admin", Bezoar do
+    pipe_through :browser # Use the default browser stack
+
+    resources "/players", PlayerController
+    resources "/champs", ChampController
+    resources "/skills", SkillController
+  end
+
   # Other scopes may use custom stacks.
-  # scope "/api", Bezoar do
-  #   pipe_through :api
-  # end
+  scope "/json", Bezoar do
+     pipe_through :api
+    
+  end
 end

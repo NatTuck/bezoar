@@ -19,7 +19,8 @@ public class GameClient {
 
 		Preferences prefs = Gdx.app.getPreferences("Bezoar");
 		final String url  = prefs.getString("url", defaultURL);
-		final String user = prefs.getString("user", "bob");
+		//final String user = prefs.getString("user", "bob");
+		final int user = prefs.getInteger("user", 43);
 		
 		try {
 			sock = new Socket(url);
@@ -36,14 +37,14 @@ public class GameClient {
 				.receive("ok", new IMessageCallback() {
 					@Override
 					public void onMessage(Envelope env) {
-						self.onState(env);
+						Gdx.app.log("GameClient", "Connected to server.");
 					}
 				});
 			
-			chan.on("msg", new IMessageCallback() {
+			chan.on("begin", new IMessageCallback() {
 				@Override
 				public void onMessage(Envelope env) {
-					self.onMessage(env);
+					self.onBegin(env);
 				}
 			});
 		}
@@ -51,23 +52,16 @@ public class GameClient {
 			Gdx.app.log("GameClient", "Error: " + ee.toString());
 			throw new Error("Fatal");
 		}
-		
-		Gdx.app.log("GameClient", "done with constructor");
 	}
 
-	public void onState(Envelope env) {
-		Gdx.app.log("GameClient", "Got OK");
-		JsonNode msg   = env.getPayload();
-		final JsonNode state = msg.path("response").path("state");
-	
+	public void onBegin(Envelope env) {
+		Gdx.app.log("GameClient", "Got Begin");
+		final JsonNode bb = env.getPayload();
+		
 		Gdx.app.postRunnable(new Runnable() {
 			public void run() { 
-				game.updateBattle(state);
+				game.updateBattle(bb);
 			}
 		});
-	}
-	
-	public void onMessage(Envelope env) {
-		Gdx.app.log("GameClient", "Message: " + env.toString());
 	}
 }

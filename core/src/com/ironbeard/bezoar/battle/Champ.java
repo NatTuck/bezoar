@@ -1,14 +1,17 @@
 package com.ironbeard.bezoar.battle;
 
 import java.util.ArrayList;
+
+import com.badlogic.gdx.Gdx;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class Mob {
+public class Champ {
 	public String name;
 	public int hp;
 	public int maxHp;
 	public String status;
 	public String cmd;
+	public Posn posn;
 
 	public ArrayList<Skill> skills;
 
@@ -22,23 +25,26 @@ public class Mob {
 		skills = new ArrayList<Skill>();
 	}
 	
-	public Mob() {
+	public Champ() {
 		init();
 	}
 	
-	public Mob(JsonNode node) {
+	public Champ(JsonNode node) {
 		init();
 		loadJson(node);
 	}
 
 	public void loadJson(JsonNode node) {
 		name = node.path("name").asText();
+		posn = new Posn(node.path("posn"));
 		
 		skills.clear();
 		for (JsonNode sk : node.path("skills")) {
+			Gdx.app.log("Skill", sk.toString());
+			int    id = sk.path("id").asInt();
 			String nn = sk.path("name").asText();
-			String tt = sk.path("text").asText();
-			skills.add(new Skill(nn, tt));
+			String dd = sk.path("desc").asText();
+			skills.add(new Skill(id, nn, dd));
 		}
 	}
 	
@@ -51,12 +57,15 @@ public class Mob {
 	}
 
 	public static class Skill {
+		public final int id;
 		public final String name;
-		public final String text;
+		public final String desc;
 
-		public Skill(String name, String text) {
+		public Skill(int id, String name, String desc) {
+			Gdx.app.log("Skill", "name: " + name + "; desc: " + desc);
+			this.id   = id;
 			this.name = name;
-			this.text = text;
+			this.desc = desc;
 		}
 	}
 }

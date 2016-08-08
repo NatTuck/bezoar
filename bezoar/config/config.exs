@@ -5,6 +5,9 @@
 # is restricted to this project.
 use Mix.Config
 
+config :bezoar,
+  ecto_repos: [Bezoar.Repo]
+
 # Configures the endpoint
 config :bezoar, Bezoar.Endpoint,
   url: [host: "localhost"],

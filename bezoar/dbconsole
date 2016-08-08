@@ -1,0 +1,2 @@
+#!/bin/bash
+PGPASSWORD=password1 psql -U bezoar bezoar_dev 

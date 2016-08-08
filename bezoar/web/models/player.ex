@@ -1,7 +1,10 @@
 defmodule Bezoar.Player do
   use Bezoar.Web, :model
+  import Ecto.Query
 
   schema "players" do
+    has_many :champs, Bezoar.Champ
+
     field :name, :string
     field :email, :string
     field :secret, :string
@@ -22,5 +25,23 @@ defmodule Bezoar.Player do
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @required_fields, @optional_fields)
+  end
+
+  def name_to_id(name) do
+    Bezoar.Repo.one!(Bezoar.Player |> where([p], p.name == ^name)).id
+  end
+
+  def get_team(player_id) do
+    pp = Bezoar.Repo.one!(Bezoar.Player 
+          |> where([p], p.id == ^player_id)
+          |> preload(champs: :skills))
+    Enum.map(pp.champs, &Bezoar.Champ.to_map/1)
+  end
+
+  def to_map(player) do
+    %{
+      "id"   => player.id,
+      "name" => player.name,
+    }
   end
 end

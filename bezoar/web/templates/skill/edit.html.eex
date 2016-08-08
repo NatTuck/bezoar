@@ -1,0 +1,6 @@
+<h2>Edit skill</h2>
+
+<%= render "form.html", changeset: @changeset,
+                        action: skill_path(@conn, :update, @skill) %>
+
+<%= link "Back", to: skill_path(@conn, :index) %>

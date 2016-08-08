@@ -1,6 +1,7 @@
 package com.ironbeard.bezoar;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -18,7 +19,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import com.ironbeard.bezoar.battle.Battle;
-import com.ironbeard.bezoar.battle.Mob;
+import com.ironbeard.bezoar.battle.Champ;
+import com.ironbeard.bezoar.battle.Posn;
 
 public class BattleScreen implements Screen {
 	BezoarGame game;
@@ -26,15 +28,15 @@ public class BattleScreen implements Screen {
 	Stage stage;
 	Table table;
 	Skin  skin;
-
-	ArrayList<MobView> team0;
-	ArrayList<MobView> team1;
-	ArrayList<Cell<Actor>> skillSlots;
 	
-	Label statusLabel;
-
+	HashMap<Posn, Cell<Actor>> cells;
+	HashMap<Posn, ChampView>   champs;
+	
 	public BattleScreen(final BezoarGame game) {
 		this.game = game;
+		
+		cells  = new HashMap<Posn, Cell<Actor>>();
+		champs = new HashMap<Posn, ChampView>();
 	
 		skin = FontLoader.getSkin("DroidSans", 32);
 		
@@ -46,39 +48,34 @@ public class BattleScreen implements Screen {
 		
 		table.setDebug(true);
 	
-		skillSlots = new ArrayList<Cell<Actor>>();
+		Actor placeholder = new Actor();
+		for (int yy = 0; yy < 4; ++yy) {
+			for (int xx = 0; xx < 5; ++xx) {
+				Cell<Actor> cc = table.add(placeholder);
+				cc.uniform().expand().fill();
+				cells.put(new Posn(yy, xx), cc);
+			}
+			if(yy < 3) {
+				table.row();
+			}
+		}
 		
-		team0 = new ArrayList<MobView>();
-		for (int ii = 0; ii < 4; ++ii) {
-			team0.add(new MobView(true));
+		for (int yy = 0; yy < 2; ++yy) {
+			for (int xx = 0; xx < 4; ++xx) {
+				int cx = xx < 2 ? xx : xx + 1;
+				
+				ChampView cv = new ChampView(xx < 2);
+				champs.put(new Posn(yy, xx), cv);
+				
+				Cell<Actor> cc = cells.get(new Posn(yy, cx));
+				cc.setActor(cv);
+			}
 		}
 
-		team1 = new ArrayList<MobView>();
-		for (int ii = 0; ii < 4; ++ii) {
-			team1.add(new MobView(false));
+		for (int xx = 0; xx < 3; ++xx) {
+			Cell<Actor> cc = cells.get(new Posn(2, xx));
+			cc.setActor(new TextButton("...", skin));
 		}
-		
-		statusLabel = new Label("", skin);
-		
-		table.add(team0.get(2)).fill().expand();
-		table.add(team0.get(0)).fill().expand();
-		table.add(statusLabel).fill().expand();
-		table.add(team1.get(0)).fill().expand();
-		table.add(team1.get(2)).fill().expand();
-		table.row();
-		table.add(team0.get(3)).fill().expand();
-		table.add(team0.get(1)).fill().expand();
-		table.add(new Label("", skin)).fill().expand();
-		table.add(team1.get(3)).fill().expand();
-		table.add(team1.get(1)).fill().expand();
-		table.row();
-		for (int ii = 0; ii < 3; ++ii) {
-			@SuppressWarnings("unchecked")
-			Cell<Actor> slot = table.add().uniform().fill().expandX();
-			skillSlots.add(slot);
-		}
-		table.add(new Label("", skin)).uniform().fill().expandX();
-		table.add(new TextButton("Back", skin)).uniform().fill().expandX();
 	}
 	
 	@Override
@@ -126,28 +123,22 @@ public class BattleScreen implements Screen {
 	}
 
 	public void update(Battle bb) {
-		int ii;
-			
-		ii = 0;
-		for (Mob mm : bb.team0) {
-			team0.get(ii).update(mm);
-			ii++;
-		}
-			
-		ii = 0;
-		for (Mob mm : bb.team1) {
-			team1.get(ii).update(mm);
-			ii++;
+		for (int yy = 0; yy < 2; yy++) {
+			for (int xx = 0; xx < 4; xx++) {
+				Posn  pp = new Posn(yy, xx);
+				Champ cc = bb.champs.get(pp);
+				champs.get(pp).update(cc);
+			}
 		}
 	}
 	
 	public class SkillView extends TextButton {
-		MobView mv;
+		ChampView cv;
 		
-		public SkillView(MobView mv, Mob.Skill sk) {
+		public SkillView(ChampView cv, Champ.Skill sk) {
 			super("", skin);
 
-			this.mv = mv;
+			this.cv = cv;
 			setText(sk.name);
 			
 			final SkillView self = this;
@@ -164,7 +155,7 @@ public class BattleScreen implements Screen {
 		}
 	}
 	
-	public class MobView extends Table {
+	public class ChampView extends Table {
 		Skin skin;
 		
 		Label name;
@@ -172,15 +163,15 @@ public class BattleScreen implements Screen {
 		Label status;
 		Label cmd;
 		
-		ArrayList<Mob.Skill> skills;
+		ArrayList<Champ.Skill> skills;
 		
-		public MobView(boolean canClick) {
+		public ChampView(boolean canClick) {
 			skin   = FontLoader.getSkin("DroidSans", 25);
 			name   = new Label("...", skin);
 			health = new Label("...", skin);
 			status = new Label("...", skin);
 			cmd    = new Label("...", skin);
-			skills = new ArrayList<Mob.Skill>();
+			skills = new ArrayList<Champ.Skill>();
 
 			add(name);
 			row();
@@ -195,7 +186,7 @@ public class BattleScreen implements Screen {
 			setTouchable(Touchable.enabled);
 
 			if (canClick) {
-				final MobView self = this;
+				final ChampView self = this;
 				addListener(new ClickListener() {
 					@Override
 					public void clicked(InputEvent event, float _x, float _y) {
@@ -205,22 +196,27 @@ public class BattleScreen implements Screen {
 			}
 		}
 		
-		public void update(Mob mm) {
+		public void update(Champ mm) {
 			name.setText(mm.name);
 			health.setText("HP: " + mm.hp + "/" + mm.maxHp);
 			status.setText(mm.status);
 			cmd.setText(mm.cmd);
 		
 			skills.clear();
-			for (Mob.Skill sk : mm.skills) {
+			for (Champ.Skill sk : mm.skills) {
 				skills.add(sk);
 			}
 		}
 		
 		public void clicked() {
 			for (int ii = 0; ii < skills.size(); ++ii) {
-				Cell<Actor> slot = BattleScreen.this.skillSlots.get(ii);
-				slot.setActor(new SkillView(this, skills.get(ii)));
+				Champ.Skill sk = skills.get(ii);
+				
+				Cell<Actor> btnSlot = BattleScreen.this.cells.get(new Posn(2, ii));
+				btnSlot.setActor(new SkillView(this, sk));
+				
+				Cell<Actor> lblSlot = BattleScreen.this.cells.get(new Posn(3, ii));
+				lblSlot.setActor(new Label(sk.desc, skin));
 			}
 		}
 	}

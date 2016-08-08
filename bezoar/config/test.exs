@@ -12,8 +12,8 @@ config :logger, level: :warn
 # Configure your database
 config :bezoar, Bezoar.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
+  username: "bezoar",
+  password: "password1",
   database: "bezoar_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox

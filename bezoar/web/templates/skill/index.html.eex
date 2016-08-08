@@ -1,0 +1,28 @@
+<h2>Listing skills</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Rules</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for skill <- @skills do %>
+    <tr>
+      <td><%= skill.name %></td>
+      <td><%= skill.rules %></td>
+
+      <td class="text-right">
+        <%= link "Show", to: skill_path(@conn, :show, skill), class: "btn btn-default btn-xs" %>
+        <%= link "Edit", to: skill_path(@conn, :edit, skill), class: "btn btn-default btn-xs" %>
+        <%= link "Delete", to: skill_path(@conn, :delete, skill), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<%= link "New skill", to: skill_path(@conn, :new) %>

@@ -1,0 +1,6 @@
+<h2>New champ</h2>
+
+<%= render "form.html", changeset: @changeset,
+                        action: champ_path(@conn, :create) %>
+
+<%= link "Back", to: champ_path(@conn, :index) %>

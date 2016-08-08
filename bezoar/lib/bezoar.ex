@@ -27,4 +27,17 @@ defmodule Bezoar do
     Bezoar.Endpoint.config_change(changed, removed)
     :ok
   end
+
+  # FIXME: This is probably a bad idea.
+  defimpl Phoenix.HTML.Safe, for: Map do
+    def to_string(map) do
+      inspect(map)
+      |> Phoenix.HTML.html_escape
+    end
+
+    def to_iodata(map) do
+      {:safe, text} = inspect(map) |> Phoenix.HTML.html_escape
+      [text]
+    end 
+  end
 end
