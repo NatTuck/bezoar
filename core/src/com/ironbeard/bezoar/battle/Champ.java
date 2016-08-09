@@ -2,10 +2,10 @@ package com.ironbeard.bezoar.battle;
 
 import java.util.ArrayList;
 
-import com.badlogic.gdx.Gdx;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class Champ {
+	public int id;
 	public String name;
 	public int hp;
 	public int maxHp;
@@ -16,6 +16,7 @@ public class Champ {
 	public ArrayList<Skill> skills;
 
 	private void init() {
+		id = -1;
 		name = "";
 		hp = 0;
 		maxHp = 0;
@@ -35,12 +36,12 @@ public class Champ {
 	}
 
 	public void loadJson(JsonNode node) {
+		id   = node.path("id").asInt();
 		name = node.path("name").asText();
 		posn = new Posn(node.path("posn"));
 		
 		skills.clear();
 		for (JsonNode sk : node.path("skills")) {
-			Gdx.app.log("Skill", sk.toString());
 			int    id = sk.path("id").asInt();
 			String nn = sk.path("name").asText();
 			String dd = sk.path("desc").asText();
@@ -62,7 +63,6 @@ public class Champ {
 		public final String desc;
 
 		public Skill(int id, String name, String desc) {
-			Gdx.app.log("Skill", "name: " + name + "; desc: " + desc);
 			this.id   = id;
 			this.name = name;
 			this.desc = desc;

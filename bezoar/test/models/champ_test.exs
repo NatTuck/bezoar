@@ -3,7 +3,7 @@ defmodule Bezoar.ChampTest do
 
   alias Bezoar.Champ
 
-  @valid_attrs %{hp: 42, hp_max: 42, name: "some content"}
+  @valid_attrs %{hp: 42, hp_max: 42, hp_base: 42, name: "Archer", player_id: -1}
   @invalid_attrs %{}
 
   test "changeset with valid attributes" do

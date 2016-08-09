@@ -1,9 +1,12 @@
 package com.ironbeard.bezoar;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ironbeard.bezoar.battle.Battle;
+import com.ironbeard.bezoar.battle.Order;
 
 public class BezoarGame extends Game {
 	SpriteBatch batch;
@@ -45,5 +48,9 @@ public class BezoarGame extends Game {
 	public void updateBattle(JsonNode state) {
 		battle.loadJson(state);
 		battleScreen.update(battle);
+	}
+	
+	public void sendOrders(ArrayList<Order> ords) {
+		client.sendOrders(ords);
 	}
 }

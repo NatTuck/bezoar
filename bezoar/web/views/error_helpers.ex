@@ -26,10 +26,12 @@ defmodule Bezoar.ErrorHelpers do
     #
     #     dngettext "errors", "1 file", "%{count} files", count
     #
-    Gettext.dngettext(Bezoar.Gettext, "errors", msg, msg, opts[:count], opts)
+    #Gettext.dngettext(Bezoar.Gettext, "errors", msg, msg, opts[:count], opts)
+    msg
   end
 
   def translate_error(msg) do
-    Gettext.dgettext(Bezoar.Gettext, "errors", msg)
+    #Gettext.dgettext(Bezoar.Gettext, "errors", msg)
+    msg
   end
 end

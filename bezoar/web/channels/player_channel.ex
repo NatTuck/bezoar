@@ -1,19 +1,28 @@
 defmodule Bezoar.PlayerChannel do
   use Bezoar.Web, :channel
 
-  alias Bezoar.Repo
-  alias Bezoar.Player
-
   def join("players:" <> player_id, payload, socket) do
-    if authorized?(payload) do
-      {:ok, pid} = Bezoar.Battle.start_link
-      socket = Phoenix.Socket.assign(socket, :pid, pid)
+    player_id = Bezoar.Util.to_int(player_id)
 
-      :ok = Bezoar.Battle.join(pid, player_id)
+    if authorized?(payload) do
+      {:ok, bpid} = Bezoar.Battle.start_link
+      
+      socket = socket
+      |> Phoenix.Socket.assign(:bpid, bpid)
+      |> Phoenix.Socket.assign(:player_id, player_id)
+
+      :ok = Bezoar.Battle.join(bpid, player_id)
       {:ok, "joined", socket}
     else
       {:error, %{reason: "unauthorized"}}
     end
+  end
+
+  def handle_in("orders", payload, socket) do
+    bpid      = socket.assigns.bpid
+    player_id = socket.assigns.player_id
+    :ok = Bezoar.Battle.act(bpid, player_id, payload)
+    {:noreply, socket}
   end
 
   def handle_in("get_state", _payload, socket) do

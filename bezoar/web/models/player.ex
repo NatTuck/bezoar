@@ -22,13 +22,17 @@ defmodule Bezoar.Player do
   If no params are provided, an invalid changeset is returned
   with no validation performed.
   """
-  def changeset(model, params \\ :empty) do
+  def changeset(model, params \\ :invalid) do
     model
     |> cast(params, @required_fields, @optional_fields)
   end
 
+  def get_by_name(name) do
+    Bezoar.Repo.one!(Bezoar.Player |> where([p], p.name == ^name))
+  end
+
   def name_to_id(name) do
-    Bezoar.Repo.one!(Bezoar.Player |> where([p], p.name == ^name)).id
+    get_by_name(name).id
   end
 
   def get_team(player_id) do

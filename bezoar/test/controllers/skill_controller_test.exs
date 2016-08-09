@@ -2,7 +2,7 @@ defmodule Bezoar.SkillControllerTest do
   use Bezoar.ConnCase
 
   alias Bezoar.Skill
-  @valid_attrs %{name: "some content", rules: %{}}
+  @valid_attrs   %{name: "Maul", rules: %{}}
   @invalid_attrs %{}
 
   test "lists all entries on index", %{conn: conn} do

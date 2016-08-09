@@ -23,10 +23,11 @@ defmodule Bezoar.Champ do
   If no params are provided, an invalid changeset is returned
   with no validation performed.
   """
-  def changeset(model, params \\ :empty) do
+  def changeset(model, params \\ :invalid) do
     model
     |> cast(params, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
+    |> foreign_key_constraint(:player_id)
     |> cast_assoc(:champ_skills, required: false)
   end
 

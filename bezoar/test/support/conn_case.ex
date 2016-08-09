@@ -26,6 +26,7 @@ defmodule Bezoar.ConnCase do
       import Ecto.Query, only: [from: 1, from: 2]
 
       import Bezoar.Router.Helpers
+      import Bezoar.Factory
 
       # The default endpoint for testing
       @endpoint Bezoar.Endpoint
@@ -33,10 +34,7 @@ defmodule Bezoar.ConnCase do
   end
 
   setup tags do
-    unless tags[:async] do
-      Ecto.Adapters.SQL.restart_test_transaction(Bezoar.Repo, [])
-    end
-
-    {:ok, conn: Phoenix.ConnTest.conn()}
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Bezoar.Repo)
+    {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

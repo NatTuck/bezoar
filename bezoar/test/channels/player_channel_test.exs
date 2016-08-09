@@ -4,11 +4,16 @@ defmodule Bezoar.PlayerChannelTest do
   alias Bezoar.PlayerChannel
 
   setup do
-    {:ok, _, socket} =
-      socket("user_id", %{some: :assign})
-      |> subscribe_and_join(PlayerChannel, "players:lobby")
+    bob = insert(:player)
+    champs = Enum.map 1..4, fn _ ->
+      insert(:champ, player: bob)
+    end
 
-    {:ok, socket: socket}
+    {:ok, battle, socket} =
+      socket()
+      |> subscribe_and_join(PlayerChannel, "players:#{bob.id}")
+
+    {:ok, [socket: socket, champs: champs]}
   end
 
   test "ping replies with status ok", %{socket: socket} do
@@ -16,13 +21,12 @@ defmodule Bezoar.PlayerChannelTest do
     assert_reply ref, :ok, %{"hello" => "there"}
   end
 
-  test "shout broadcasts to players:lobby", %{socket: socket} do
-    push socket, "shout", %{"hello" => "all"}
-    assert_broadcast "shout", %{"hello" => "all"}
-  end
-
   test "broadcasts are pushed to the client", %{socket: socket} do
     broadcast_from! socket, "broadcast", %{"some" => "data"}
     assert_push "broadcast", %{"some" => "data"}
+  end
+
+  test "join a game, submit orders", %{socket: socket, champs: champs} do
+    IO.inspect champs
   end
 end

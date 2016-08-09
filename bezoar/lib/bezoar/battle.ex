@@ -21,29 +21,48 @@ defmodule Bezoar.Battle do
   def init(_bb) do
     players = Bezoar.Repo.all(Bezoar.Player) 
               |> Enum.map(&Bezoar.Player.to_map/1)
-    battle = %{"players" => players} |> get_teams
-    {:ok, battle}
+    battle = %{
+      "players" => players, 
+      "orders" => [],
+      "events" => [],
+    }
+    {:ok, get_teams(battle)}
   end
 
   def handle_cast({:join, player_id}, battle) do
-    Process.send_after(self, {:begin, player_id}, 1000)
+    send_client(player_id, "begin", battle)
     {:noreply, battle}
   end
 
+  def handle_cast({:act, player_id, orders}, battle) do
+    battle = battle
+    |> Map.put("orders", Enum.map(orders, fn xs -> [player_id | xs] end))
+    |> apply_orders
+    |> resolve_events
+    send_client(player_id, "update", battle)
+    {:noreply, battle}
+  end
+ 
   def handle_call({:get, _player_id}, _from, battle) do
     {:reply, battle, battle}
   end
-
-  def handle_cast(:act, {player_id, orders}, battle) do
-    
-  end
-  
-  def handle_info({:begin, player_id}, battle) do
-    Bezoar.Endpoint.broadcast!("players:" <> to_string(player_id), "begin", battle)
+ 
+  def handle_info({:send, player_id, tag, msg}, battle) do
+    Bezoar.Endpoint.broadcast!("players:" <> to_string(player_id), tag, msg)
     {:noreply, battle}
   end
 
+  def send_client(player_id, tag, msg) do
+    Process.send_after(self, {:send, player_id, tag, msg}, 250)
+  end
+
   # Game Logic
+
+  def resolve_events(battle) do 
+    Enum.reduce Map.get(battle, "events"), battle, fn ev, acc ->
+      acc
+    end
+  end
 
   def get_teams(battle) do
     ids = battle |> Map.get("players") |> Enum.map(fn pp -> Map.get(pp, "id") end)
@@ -60,8 +79,94 @@ defmodule Bezoar.Battle do
     Map.put(champ, "posn", [py, px])
   end 
 
-  def check do
-    {:ok, bb} = init(%{})
-    get_teams(bb)
+  def apply_orders(battle) do
+    orders = Map.get(battle, "orders")
+    battle = battle
+    |> Map.put("orders", [])
+    |> Map.put("events", [])
+    Enum.reduce orders, battle, &apply_order/2
+  end
+
+  def apply_order([_player_id, champ_id, skill_id], battle) do
+    champ   = get_champ(battle, champ_id)
+    skill   = get_skill(champ, skill_id)
+    effects = Map.get(Map.get(skill, "rules"), "active")
+
+    events = Enum.reduce effects, Map.get(battle, "events"), fn eff, evts ->
+      targs = pick_targets(battle, champ, eff)
+      Enum.reduce targs, evts, fn tt, acc ->
+        event = [tt, champ_id, eff]
+        [ event | acc ]
+      end
+    end
+
+    Map.put(battle, "events", events)
+  end
+
+  def get_champ(battle, champ_id) do
+    Enum.find(Map.get(battle, "champs"), fn cc -> Map.get(cc, "id") == champ_id end)
+  end
+
+  def get_skill(champ, skill_id) do
+    Enum.find(Map.get(champ, "skills"), fn ss -> Map.get(ss, "id") == skill_id end)
+  end
+
+  def pick_targets(battle, champ, effect) do
+    targs = Map.get(battle, "champs")
+    |> filter_in_range(champ, effect)
+    |> filter_target_team(champ, effect)
+        
+    nn = Map.get(effect, "targs", 1)
+
+    case Map.get(effect, "pick") do
+      "self" ->
+        champ
+      "random" ->
+        Enum.take_random(targs, nn)
+      "hurt" ->
+        targs
+        |> sort_by_health
+        |> Enum.take(nn)
+      "healthy" ->
+        targs
+        |> sort_by_health
+        |> Enum.reverse
+        |> Enum.take(nn)
+    end
+  end
+
+  def sort_by_health(champs) do
+    Enum.sort champs, fn tt ->
+      chp = Map.get(tt, "hp")
+      mhp = Map.get(tt, "hp_max")
+      chp / mhp
+    end
+  end
+
+  def champ_distance(ch0, ch1) do
+    [y0, x0] = Map.get(ch0, "posn")
+    [y1, x1] = Map.get(ch1, "posn")
+    abs(y1 - y0) + abs(x1 - x0)
+  end
+
+  def filter_in_range(targs, champ, effect) do
+    range = Map.get(effect, "range")
+    Enum.filter targs, fn cc ->
+      champ_distance(champ, cc) <= range
+    end
+  end
+
+  def filter_target_team(targs, champ, effect) do
+    team = Map.get(effect, "team")
+    Enum.filter targs, fn cc ->
+      case team do
+        "ally" ->
+          Map.get(champ, "player_id") == Map.get(cc, "player_id")
+        "enemy" -> 
+          Map.get(champ, "player_id") != Map.get(cc, "player_id")
+        "any" ->
+          true
+      end
+    end
   end
 end

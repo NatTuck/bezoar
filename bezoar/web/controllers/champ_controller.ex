@@ -34,13 +34,13 @@ defmodule Bezoar.ChampController do
   end
 
   def edit(conn, %{"id" => id}) do
-    champ = Repo.get!(Champ, id)
+    champ = Repo.get!(Champ, id) |> Repo.preload(:champ_skills)
     changeset = Champ.changeset(champ)
     render(conn, "edit.html", champ: champ, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "champ" => champ_params}) do
-    champ = Repo.get!(Champ, id)
+    champ = Repo.get!(Champ, id) |> Repo.preload(:champ_skills)
     changeset = Champ.changeset(champ, champ_params)
 
     case Repo.update(changeset) do

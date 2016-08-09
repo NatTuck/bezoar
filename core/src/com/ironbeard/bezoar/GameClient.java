@@ -1,8 +1,13 @@
 package com.ironbeard.bezoar;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 import org.phoenixframework.channels.*;
 import com.fasterxml.jackson.databind.JsonNode;
-
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.ironbeard.bezoar.battle.Order;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 
@@ -63,5 +68,23 @@ public class GameClient {
 				game.updateBattle(bb);
 			}
 		});
+	}
+	
+	public void sendOrders(ArrayList<Order> ords) {
+		Gdx.app.log("GameClient", "Sending orders: " + ords.toString());
+		
+		JsonNodeFactory json = JsonNodeFactory.instance;
+		
+		ArrayNode node = json.arrayNode();
+		for (Order oo : ords) {
+			node.add(oo.toJson());
+		}
+	
+		try {
+			chan.push("orders", node);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

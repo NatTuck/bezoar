@@ -2,8 +2,8 @@ defmodule Bezoar.ChampControllerTest do
   use Bezoar.ConnCase
 
   alias Bezoar.Champ
-  @valid_attrs %{hp: 42, hp_max: 42, name: "some content"}
-  @invalid_attrs %{}
+  #@valid_attrs %{hp: 42, hp_max: 42, name: "Minotaur", player_id: -1, hp_base: 42}
+  @invalid_attrs %{hp: 42, name: "Spider Goat"}
 
   test "lists all entries on index", %{conn: conn} do
     conn = get conn, champ_path(conn, :index)
@@ -16,9 +16,12 @@ defmodule Bezoar.ChampControllerTest do
   end
 
   test "creates resource and redirects when data is valid", %{conn: conn} do
-    conn = post conn, champ_path(conn, :create), champ: @valid_attrs
+    player = insert(:player)
+    champ  = params_for(:champ, %{player_id: player.id})
+
+    conn = post conn, champ_path(conn, :create), champ: champ
     assert redirected_to(conn) == champ_path(conn, :index)
-    assert Repo.get_by(Champ, @valid_attrs)
+    assert Repo.get_by(Champ, %{name: champ.name})
   end
 
   test "does not create resource and renders errors when data is invalid", %{conn: conn} do
@@ -27,7 +30,7 @@ defmodule Bezoar.ChampControllerTest do
   end
 
   test "shows chosen resource", %{conn: conn} do
-    champ = Repo.insert! %Champ{}
+    champ = insert(:champ)
     conn = get conn, champ_path(conn, :show, champ)
     assert html_response(conn, 200) =~ "Show champ"
   end
@@ -39,26 +42,26 @@ defmodule Bezoar.ChampControllerTest do
   end
 
   test "renders form for editing chosen resource", %{conn: conn} do
-    champ = Repo.insert! %Champ{}
+    champ = insert(:champ)
     conn = get conn, champ_path(conn, :edit, champ)
     assert html_response(conn, 200) =~ "Edit champ"
   end
 
   test "updates chosen resource and redirects when data is valid", %{conn: conn} do
-    champ = Repo.insert! %Champ{}
-    conn = put conn, champ_path(conn, :update, champ), champ: @valid_attrs
+    champ = insert(:champ)
+    conn = put conn, champ_path(conn, :update, champ), champ: %{name: "Iguana"}
     assert redirected_to(conn) == champ_path(conn, :show, champ)
-    assert Repo.get_by(Champ, @valid_attrs)
+    assert Repo.get_by(Champ, %{name: "Iguana"})
   end
 
   test "does not update chosen resource and renders errors when data is invalid", %{conn: conn} do
-    champ = Repo.insert! %Champ{}
-    conn = put conn, champ_path(conn, :update, champ), champ: @invalid_attrs
+    champ = insert(:champ)
+    conn = put conn, champ_path(conn, :update, champ), champ: %{player_id: -1}
     assert html_response(conn, 200) =~ "Edit champ"
   end
 
   test "deletes chosen resource", %{conn: conn} do
-    champ = Repo.insert! %Champ{}
+    champ = insert(:champ)
     conn = delete conn, champ_path(conn, :delete, champ)
     assert redirected_to(conn) == champ_path(conn, :index)
     refute Repo.get(Champ, champ.id)

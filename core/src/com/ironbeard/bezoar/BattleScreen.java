@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import com.ironbeard.bezoar.battle.Battle;
 import com.ironbeard.bezoar.battle.Champ;
+import com.ironbeard.bezoar.battle.Order;
 import com.ironbeard.bezoar.battle.Posn;
 
 public class BattleScreen implements Screen {
@@ -31,12 +32,14 @@ public class BattleScreen implements Screen {
 	
 	HashMap<Posn, Cell<Actor>> cells;
 	HashMap<Posn, ChampView>   champs;
+	ArrayList<Order>           orders;
 	
 	public BattleScreen(final BezoarGame game) {
 		this.game = game;
 		
 		cells  = new HashMap<Posn, Cell<Actor>>();
 		champs = new HashMap<Posn, ChampView>();
+		orders = new ArrayList<Order>();
 	
 		skin = FontLoader.getSkin("DroidSans", 32);
 		
@@ -133,12 +136,14 @@ public class BattleScreen implements Screen {
 	}
 	
 	public class SkillView extends TextButton {
-		ChampView cv;
+		ChampView   cv;
+		Champ.Skill sk;
 		
 		public SkillView(ChampView cv, Champ.Skill sk) {
 			super("", skin);
 
 			this.cv = cv;
+			this.sk = sk;
 			setText(sk.name);
 			
 			final SkillView self = this;
@@ -151,12 +156,14 @@ public class BattleScreen implements Screen {
 		}
 		
 		public void clicked() {
-			Gdx.app.log("SkillView", "Clicked: " + getText());
+			cv.skillClicked(sk.id);
 		}
 	}
 	
 	public class ChampView extends Table {
 		Skin skin;
+		
+		Champ champ;
 		
 		Label name;
 		Label health;
@@ -197,6 +204,7 @@ public class BattleScreen implements Screen {
 		}
 		
 		public void update(Champ mm) {
+			champ = mm;
 			name.setText(mm.name);
 			health.setText("HP: " + mm.hp + "/" + mm.maxHp);
 			status.setText(mm.status);
@@ -217,6 +225,16 @@ public class BattleScreen implements Screen {
 				
 				Cell<Actor> lblSlot = BattleScreen.this.cells.get(new Posn(3, ii));
 				lblSlot.setActor(new Label(sk.desc, skin));
+			}
+		}
+		
+		public void skillClicked(int skill_id) {
+			Order ord = new Order(champ.id, skill_id);
+			orders = BattleScreen.this.orders;
+			orders.add(ord);
+			
+			if (orders.size() == 2) {
+				BattleScreen.this.game.sendOrders(orders);
 			}
 		}
 	}

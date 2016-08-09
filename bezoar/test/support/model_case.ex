@@ -26,10 +26,6 @@ defmodule Bezoar.ModelCase do
   end
 
   setup tags do
-    unless tags[:async] do
-      Ecto.Adapters.SQL.restart_test_transaction(Bezoar.Repo, [])
-    end
-
     :ok
   end
 

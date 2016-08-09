@@ -28,7 +28,7 @@ Repo.insert!(%Skill{name: "Stab", desc: "melee: 5 Damage",
     active: [
       %{range: 1,
         team: "enemy",
-        pick: "first",
+        pick: "random",
         effect: ["dmg", 5]},
       ],
   }})
@@ -39,7 +39,7 @@ Repo.insert!(%Skill{name: "Maul", desc: "melee: 8 Damage",
     active: [
       %{range: 1,
         team: "enemy",
-        pick: "first",
+        pick: "random",
         effect: ["dmg", 8]},
       ],
   }})
@@ -50,7 +50,7 @@ Repo.insert!(%Skill{name: "Heal", desc: "smart: Heal 5",
     active: [
       %{range: 3,
         team: "ally",
-        pick: "low_health",
+        pick: "hurt",
         effect: ["heal", 5]},
     ],
   }})
