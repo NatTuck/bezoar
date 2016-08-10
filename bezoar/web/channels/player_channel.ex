@@ -21,8 +21,8 @@ defmodule Bezoar.PlayerChannel do
   def handle_in("orders", payload, socket) do
     bpid      = socket.assigns.bpid
     player_id = socket.assigns.player_id
-    :ok = Bezoar.Battle.act(bpid, player_id, payload)
-    {:noreply, socket}
+    battle    = Bezoar.Battle.act(bpid, player_id, payload)
+    {:reply, {:ok, battle}, socket}
   end
 
   def handle_in("get_state", _payload, socket) do

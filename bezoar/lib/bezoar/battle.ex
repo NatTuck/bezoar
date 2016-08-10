@@ -6,7 +6,7 @@ defmodule Bezoar.Battle do
   end
 
   def join(pid, player_id) do
-    GenServer.cast(pid, {:join, player_id})
+    GenServer.call(pid, {:join, player_id})
   end
 
   def get(pid, player_id) do
@@ -14,7 +14,7 @@ defmodule Bezoar.Battle do
   end
 
   def act(pid, player_id, actions) do
-    GenServer.cast(pid, {:act, player_id, actions})
+    GenServer.call(pid, {:act, player_id, actions})
   end
 
   # Server code
@@ -29,37 +29,26 @@ defmodule Bezoar.Battle do
     {:ok, get_teams(battle)}
   end
 
-  def handle_cast({:join, player_id}, battle) do
-    send_client(player_id, "begin", battle)
-    {:noreply, battle}
+  def handle_call({:join, _player_id}, _from, battle) do
+    {:reply, :ok, battle}
   end
 
-  def handle_cast({:act, player_id, orders}, battle) do
+  def handle_call({:get, _player_id}, _from, battle) do
+    {:reply, battle, battle}
+  end
+
+  def handle_call({:act, player_id, orders}, _from, battle) do
     battle = battle
     |> Map.put("orders", Enum.map(orders, fn xs -> [player_id | xs] end))
     |> apply_orders
     |> resolve_events
-    send_client(player_id, "update", battle)
-    {:noreply, battle}
-  end
- 
-  def handle_call({:get, _player_id}, _from, battle) do
     {:reply, battle, battle}
   end
  
-  def handle_info({:send, player_id, tag, msg}, battle) do
-    Bezoar.Endpoint.broadcast!("players:" <> to_string(player_id), tag, msg)
-    {:noreply, battle}
-  end
-
-  def send_client(player_id, tag, msg) do
-    Process.send_after(self, {:send, player_id, tag, msg}, 250)
-  end
-
   # Game Logic
 
   def resolve_events(battle) do 
-    Enum.reduce Map.get(battle, "events"), battle, fn ev, acc ->
+    Enum.reduce Map.get(battle, "events"), battle, fn _ev, acc ->
       acc
     end
   end
@@ -95,7 +84,7 @@ defmodule Bezoar.Battle do
     events = Enum.reduce effects, Map.get(battle, "events"), fn eff, evts ->
       targs = pick_targets(battle, champ, eff)
       Enum.reduce targs, evts, fn tt, acc ->
-        event = [tt, champ_id, eff]
+        event = [Map.get(tt, "id"), champ_id, eff]
         [ event | acc ]
       end
     end
@@ -115,12 +104,12 @@ defmodule Bezoar.Battle do
     targs = Map.get(battle, "champs")
     |> filter_in_range(champ, effect)
     |> filter_target_team(champ, effect)
-        
+
     nn = Map.get(effect, "targs", 1)
 
     case Map.get(effect, "pick") do
       "self" ->
-        champ
+        [champ]
       "random" ->
         Enum.take_random(targs, nn)
       "hurt" ->
