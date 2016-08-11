@@ -36,7 +36,7 @@ defmodule Bezoar.Champ do
     |> Map.from_struct
     |> Map.delete(:__meta__)
     |> skills_to_maps 
-    |> Map.drop([:champ_skills, :updated_at, :inserted_at, :player, :player_id])
+    |> Map.drop([:champ_skills, :updated_at, :inserted_at, :player])
     |> Bezoar.Util.keys_to_string
     |> Map.put("dead", false)
     |> Map.put("effects", [])

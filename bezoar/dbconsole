@@ -1,2 +1,3 @@
 #!/bin/bash
-PGPASSWORD=password1 psql -U bezoar bezoar_dev 
+MIX_ENV=${MIX_ENV:-dev}
+PGPASSWORD=password1 psql -U bezoar bezoar_${MIX_ENV}

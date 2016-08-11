@@ -18,7 +18,7 @@ defmodule Bezoar.Battle do
   end
 
   # Server code
-  def init(_bb) do
+  def init(_bb \\ %{}) do
     players = Bezoar.Repo.all(Bezoar.Player) 
               |> Enum.map(&Bezoar.Player.to_map/1)
     battle = %{
@@ -40,6 +40,7 @@ defmodule Bezoar.Battle do
   def handle_call({:act, player_id, orders}, _from, battle) do
     battle = battle
     |> Map.put("orders", Enum.map(orders, fn xs -> [player_id | xs] end))
+    |> add_default_orders
     |> apply_orders
     |> resolve_events
     {:reply, battle, battle}
@@ -47,10 +48,38 @@ defmodule Bezoar.Battle do
  
   # Game Logic
 
-  def resolve_events(battle) do 
-    Enum.reduce Map.get(battle, "events"), battle, fn _ev, acc ->
-      acc
+  def add_default_orders(battle) do
+    need_orders = Enum.filter Map.get(battle, "champs"), fn cc ->
+      Enum.reduce Map.get(battle, "orders"), true, fn [_, c_id, _], acc ->
+        acc && c_id != Map.get(cc, "id")
+      end
     end
+
+    orders = Enum.reduce need_orders, Map.get(battle, "orders"), fn cc, acc ->
+      p_id = Map.get(cc, "player_id")
+      s_id = Map.get(hd(Map.get(cc, "skills")), "id")
+      [ [p_id, Map.get(cc, "id"), s_id] | acc ]
+    end
+
+    Map.put(battle, "orders", orders)
+  end
+
+  def resolve_events(battle) do 
+    Enum.reduce Map.get(battle, "events"), battle, fn [t_id, _s_id, %{"effect" => effect}] , acc ->
+      tt0 = get_champ(acc, t_id)
+      tt1 = apply_effect(effect, tt0)
+      put_champ(acc, tt1)
+    end
+  end
+
+  def apply_effect(["dmg", xx], champ) do
+    hp = Map.get(champ, "hp") - xx
+    %{champ | "hp" => hp }
+  end
+
+  def apply_effect("heal", xx], champ) do
+    hp = Map.get(champ, "hp") + xx
+    %{champ | "hp" => hp }
   end
 
   def get_teams(battle) do
@@ -59,6 +88,7 @@ defmodule Bezoar.Battle do
       team = Bezoar.Player.get_team(p_id)
       champs ++ Enum.map(Enum.with_index(team), &(add_posn(&1, pi)))
     end
+    
     Map.put(battle, "champs", champs)
   end
 
@@ -94,6 +124,17 @@ defmodule Bezoar.Battle do
 
   def get_champ(battle, champ_id) do
     Enum.find(Map.get(battle, "champs"), fn cc -> Map.get(cc, "id") == champ_id end)
+  end
+
+  def put_champ(battle, champ) do
+    champs = Enum.map Map.get(battle, "champs"), fn cc ->
+      if Map.get(champ, "id") == Map.get(cc, "id") do
+        champ
+      else
+        cc
+      end
+    end
+    Map.put(battle, "champs", champs)
   end
 
   def get_skill(champ, skill_id) do
