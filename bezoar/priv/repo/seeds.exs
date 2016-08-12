@@ -78,9 +78,9 @@ ps = Repo.all(Player)
 Enum.each Repo.all(Player), fn pp ->
   Enum.each [0, 1], fn ii ->
     Repo.insert!(Champ.changeset(%Champ{}, %{ name: "#{pp.name}'s Fighter #{ii}", hp_base: 20, 
-      champ_skills: make_cs.([stab, maul]), player_id: pp.id }))
+      hp: 20, hp_max: 20, champ_skills: make_cs.([stab, maul]), player_id: pp.id }))
     Repo.insert!(Champ.changeset(%Champ{}, %{ name: "#{pp.name}'s Priest #{ii}", hp_base: 15, 
-      champ_skills: make_cs.([wand, heal]), player_id: pp.id }))
+      hp: 20, hp_max: 20, champ_skills: make_cs.([wand, heal]), player_id: pp.id }))
   end
 end
 

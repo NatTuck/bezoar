@@ -43,9 +43,6 @@ defmodule Bezoar.Player do
   end
 
   def to_map(player) do
-    %{
-      "id"   => player.id,
-      "name" => player.name,
-    }
+    %{ id: player.id, name: player.name, }
   end
 end

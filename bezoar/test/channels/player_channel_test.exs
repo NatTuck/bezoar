@@ -33,7 +33,9 @@ defmodule Bezoar.PlayerChannelTest do
     assert length(sue.champs) == 4
 
     ref = push socket, "orders", [[aa.id, aa_ss.id], [bb.id, bb_ss.id]]
-    assert_reply ref, :ok, battle
+    assert_reply ref, :ok
+
+    assert_broadcast "battle", battle
 
     champs = Map.get(battle, "champs")
     assert length(champs) == 8
@@ -43,7 +45,5 @@ defmodule Bezoar.PlayerChannelTest do
 
     cc = hd(champs)
     assert Map.get(cc, "hp") == Map.get(cc, "hp_base") - 2
-
-    IO.inspect battle
   end
 end

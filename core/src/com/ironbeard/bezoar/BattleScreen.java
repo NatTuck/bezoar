@@ -228,13 +228,15 @@ public class BattleScreen implements Screen {
 			}
 		}
 		
+		@SuppressWarnings("unchecked")
 		public void skillClicked(int skill_id) {
 			Order ord = new Order(champ.id, skill_id);
 			orders = BattleScreen.this.orders;
 			orders.add(ord);
 			
 			if (orders.size() == 2) {
-				BattleScreen.this.game.sendOrders(orders);
+				BattleScreen.this.game.sendOrders((ArrayList<Order>)orders.clone());
+				orders.clear();
 			}
 		}
 	}

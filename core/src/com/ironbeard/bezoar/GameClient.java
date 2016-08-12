@@ -17,10 +17,12 @@ public class GameClient {
 	BezoarGame game;
 	Socket  sock;
 	Channel chan;
-
+	JsonNodeFactory json;
+	
 	public GameClient(BezoarGame game) {
 		this.game = game;
 		final GameClient self = this;
+		json = JsonNodeFactory.instance;
 
 		Preferences prefs = Gdx.app.getPreferences("Bezoar");
 		final String url  = prefs.getString("url", defaultURL);
@@ -32,6 +34,7 @@ public class GameClient {
 			sock.connect();
 			
 			chan = sock.chan("players:" + user, null);
+			final Channel cc = chan;
 			chan.join()
 				.receive("ignore", new IMessageCallback() {
 					@Override
@@ -43,13 +46,19 @@ public class GameClient {
 					@Override
 					public void onMessage(Envelope env) {
 						Gdx.app.log("GameClient", "Connected to server.");
+						try {
+							cc.push("ready");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				});
 			
-			chan.on("begin", new IMessageCallback() {
+			chan.on("battle", new IMessageCallback() {
 				@Override
 				public void onMessage(Envelope env) {
-					self.onBegin(env);
+					self.onBattle(env);
 				}
 			});
 		}
@@ -59,9 +68,10 @@ public class GameClient {
 		}
 	}
 
-	public void onBegin(Envelope env) {
-		Gdx.app.log("GameClient", "Got Begin");
+	public void onBattle(Envelope env) {
+		Gdx.app.log("GameClient", "Got Battle");
 		final JsonNode bb = env.getPayload();
+		Gdx.app.log("GameClient", "Battle:\n"+bb.toString());
 		
 		Gdx.app.postRunnable(new Runnable() {
 			public void run() { 

@@ -28,8 +28,6 @@ defmodule Bezoar.Skill do
   def to_map(skill) do
     skill
     |> Map.from_struct
-    |> Map.delete(:__meta__)
     |> Map.drop([:__meta__, :champ_skills, :inserted_at, :updated_at])
-    |> Bezoar.Util.keys_to_string
   end
 end

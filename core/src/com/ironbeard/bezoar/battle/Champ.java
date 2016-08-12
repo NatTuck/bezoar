@@ -36,9 +36,11 @@ public class Champ {
 	}
 
 	public void loadJson(JsonNode node) {
-		id   = node.path("id").asInt();
-		name = node.path("name").asText();
-		posn = new Posn(node.path("posn"));
+		id    = node.path("id").asInt();
+		name  = node.path("name").asText();
+		hp    = node.path("hp").asInt();
+		maxHp = node.path("hp_max").asInt();
+		posn  = new Posn(node.path("posn"));
 		
 		skills.clear();
 		for (JsonNode sk : node.path("skills")) {

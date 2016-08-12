@@ -1,5 +1,6 @@
 defmodule Bezoar.PlayerChannel do
   use Bezoar.Web, :channel
+  import Bezoar.Util, only: [keys_to_string: 1, keys_to_atom: 1]
 
   def join("players:" <> player_id, payload, socket) do
     player_id = Bezoar.Util.to_int(player_id)
@@ -21,12 +22,14 @@ defmodule Bezoar.PlayerChannel do
   def handle_in("orders", payload, socket) do
     bpid      = socket.assigns.bpid
     player_id = socket.assigns.player_id
-    battle    = Bezoar.Battle.act(bpid, player_id, payload)
-    {:reply, {:ok, battle}, socket}
+    battle    = keys_to_string(Bezoar.Battle.act(bpid, player_id, keys_to_atom(payload)))
+    {:reply, :ok, socket}
   end
 
-  def handle_in("get_state", _payload, socket) do
-    {:reply, {:state, Bezoar.Battle.new}, socket}
+  def handle_in("ready", _payload, socket) do
+    %{bpid: bpid, player_id: player_id} = socket.assigns
+    battle = keys_to_string(Bezoar.Battle.get(bpid, player_id))
+    {:reply, {:begin, battle}, socket}
   end
 
   # Channels can be used in a request/response fashion

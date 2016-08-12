@@ -14,7 +14,7 @@ defmodule Bezoar.Champ do
     timestamps
   end
 
-  @required_fields [:name, :hp_base, :player_id]
+  @required_fields [:name, :hp_base, :hp, :hp_max, :player_id]
   @optional_fields []
 
   @doc """
@@ -37,9 +37,8 @@ defmodule Bezoar.Champ do
     |> Map.delete(:__meta__)
     |> skills_to_maps 
     |> Map.drop([:champ_skills, :updated_at, :inserted_at, :player])
-    |> Bezoar.Util.keys_to_string
-    |> Map.put("dead", false)
-    |> Map.put("effects", [])
+    |> Map.put(:dead, false)
+    |> Map.put(:effects, [])
   end
 
   defp skills_to_maps(champ) do
