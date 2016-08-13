@@ -17,9 +17,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-
+import com.badlogic.gdx.utils.Align;
 import com.ironbeard.bezoar.battle.Battle;
 import com.ironbeard.bezoar.battle.Champ;
+import com.ironbeard.bezoar.battle.Event;
 import com.ironbeard.bezoar.battle.Order;
 import com.ironbeard.bezoar.battle.Posn;
 
@@ -34,12 +35,15 @@ public class BattleScreen implements Screen {
 	HashMap<Posn, ChampView>   champs;
 	ArrayList<Order>           orders;
 	
+	ArrayList<EventBall>       balls;
+	
 	public BattleScreen(final BezoarGame game) {
 		this.game = game;
 		
 		cells  = new HashMap<Posn, Cell<Actor>>();
 		champs = new HashMap<Posn, ChampView>();
 		orders = new ArrayList<Order>();
+		balls  = new ArrayList<EventBall>();
 	
 		skin = FontLoader.getSkin("DroidSans", 32);
 		
@@ -133,6 +137,33 @@ public class BattleScreen implements Screen {
 				champs.get(pp).update(cc);
 			}
 		}
+		
+		if (bb.events.size() > 0) {
+			balls.clear();
+			for (Event ev : bb.events) {
+				ChampView s_cv = find_champ(ev.source_id);
+				ChampView t_cv = find_champ(ev.target_id);
+				
+				float x0 = s_cv.getX(Align.center);
+				float y0 = s_cv.getY(Align.center);
+				float x1 = t_cv.getX(Align.center);
+				float y1 = t_cv.getY(Align.center);
+				
+				EventBall ball = new EventBall(x0, y0, x1, y1);
+				balls.add(ball);
+				stage.addActor(ball);
+			}
+		}
+	}
+	
+	public ChampView find_champ(int champ_id) {
+		for (ChampView cv : champs.values()) {
+			if (cv.champ.id == champ_id) {
+				return cv;
+			}
+		}
+		
+		return null;
 	}
 	
 	public class SkillView extends TextButton {
@@ -151,6 +182,7 @@ public class BattleScreen implements Screen {
 				@Override
 				public void changed(ChangeEvent event, Actor actor) {
 					self.clicked();
+					self.setDisabled(true);
 				}
 			});
 		}
@@ -163,7 +195,7 @@ public class BattleScreen implements Screen {
 	public class ChampView extends Table {
 		Skin skin;
 		
-		Champ champ;
+		public Champ champ;
 		
 		Label name;
 		Label health;
